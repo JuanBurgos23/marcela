@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Te extraño</title>
+    <meta name="language" content="en-US">
+    <meta name="title" content="Dear Sun">
+    <meta name="description"
+        content="Collecting this wasn't easy — your star is my motivation to keep going! Contributions are welcome too.">
+    <link rel="icon" type="image/x-icon" href="https://cdn.jsdelivr.net/gh/sun0225SUN/photos/img/20210715233345.png">
+    <link rel="stylesheet" href="css/love.css">
+    <style>
+        #karaoke {
+            position: fixed;
+            top: 50%;
+            right: 100px;
+            transform: translateY(-50%);
+            font-size: 22px;
+            color: black;
+            background-color: transparent;
+            text-align: left;
+            padding: 10px;
+            max-width: 600px;
+            height: auto;
+            overflow: visible;
+            white-space: normal;
+            z-index: 999;
+        }
+
+        #karaoke .line {
+            position: relative;
+            width: 100%;
+            left: 0;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            font-weight: normal;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: unset;
+            margin-bottom: 5px;
+        }
+
+        #karaoke .line.current {
+            opacity: 1;
+            font-weight: bold;
+            transform: translateY(0);
+            color: black;
+            z-index: 2;
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .love {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .love.late {
+            animation: beat 1s infinite;
+        }
+
+        @keyframes beat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+
+        #background-images {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 250px;
+            /* ajusta el tamaño según tu corazón */
+            height: 250px;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            /* detrás del corazón pero encima del fondo */
+            pointer-events: none;
+        }
+
+        .bg-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 2s ease-in-out;
+            border-radius: 50%;
+            
+            /* si querés que sea un circulito bonito */
+        }
+
+        .bg-img.visible {
+            opacity: 0.2;
+            /* muy sutil */
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio autoplay loop id="audios" preload="auto">
+        <source src="MP3/Banda Blanca Imagenes.mp3" type="audio/mpeg" />
+    </audio>
+
+    <div class="container" onselectstart="return false;" unselectable="on" style="-moz-user-select:none;">
+
+        <div class="body_left">
+            <img src="images/biubiubiu.gif" alt="" ondragstart='return false;'>
+        </div>
+
+        <div class="body_center love">
+            <div id="background-images">
+                <img src="images/1.jpg" class="bg-img visible">
+                <img src="images/2.jpg" class="bg-img">
+            </div>
+            <div class="block">
+                <div class="div1"></div>
+                <div class="div2"></div>
+                <div class="div3"></div>
+                <div class="div4"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="border">
+            <div class="border-top"></div>
+            <div class="border-bottom"></div>
+        </div>
+    </div>
+    <div id="karaoke">
+        <div id="active-line" class="line current"></div>
+    </div>
+   
+    <div id="final-message" style="opacity: 0; transition: opacity 2s ease; position: fixed; bottom: 50px; left: 50%; transform: translateX(-50%);
+     font-size: 24px; color: #000000; background-color: white; padding: 10px 20px; border-radius: 8px;">
+        ¡te extrañoo! :(
+    </div>
+
+    <script type="text/javascript" src="js/love.js"></script>
+    <script>
+        const lyrics = [
+            "Imágenes que llevo",
+            "prendidas en mi corazón",
+            "y cada vez que yo te sueño",
+            "tu imagen viene hacia mi…",
+            "imágenes que tengo y viven dentro de mi",
+            "Imágenes que llevo",
+            "prendidas en mi corazón",
+            "y cada vez que yo te sueño",
+            "tu imagen viene hacia mi",
+            "imágenes que tengo y viven dentro de mi",
+            "y cada vez que yo te sueño",
+            "tu imagen viene hacia mi",
+            "y cada vez que yo lo quiero",
+            "en mi mente vives tu………….",
+            "Y cada vez que yo te sueño",
+            "tu imagen viene hacia mi",
+            "y cada vez que yo lo quiero",
+            "en mi mente vives tu…",
+            "imágenes que llevo",
+            "prendidas en mi corazón",
+            "y cada vez que yo te sueño",
+            "tu imagen viene hacia mi",
+            "imágenes que tengo y viven dentro de mi",
+            "y cada vez que yo te sueño",
+            "tu imagen viene hacia mi",
+            "y cada vez que yo lo quiero",
+            "en mi mente vives tu…………."
+        ];
+
+        const audio = document.getElementById("audios");
+        const activeLine = document.getElementById("active-line");
+
+        const startTime = 15; // inicio letra
+        const totalDuration = 251.75 - startTime - 30; // restamos 2 segundos en total para acelerar 1 seg más rápido
+        const interval = totalDuration / lyrics.length;
+
+        let lastLineIndex = -1;
+
+        audio.addEventListener("timeupdate", () => {
+            let currentTime = audio.currentTime;
+
+            if (currentTime < startTime) {
+                activeLine.textContent = "";
+                return;
+            }
+
+            let relativeTime = currentTime - startTime;
+            let currentLineIndex = Math.floor(relativeTime / interval);
+
+            if (currentLineIndex !== lastLineIndex && lyrics[currentLineIndex]) {
+                activeLine.style.opacity = 0;
+                activeLine.style.transform = "translateY(20px)";
+
+                setTimeout(() => {
+                    activeLine.textContent = lyrics[currentLineIndex];
+                    activeLine.style.opacity = 1;
+                    activeLine.style.transform = "translateY(0)";
+                }, 300); // espera la transición
+
+                lastLineIndex = currentLineIndex;
+            }
+        });
+
+        // Lógica de latido
+        function applyHeartbeat() {
+            const loveElement = document.querySelector(".love");
+            loveElement.classList.add("late");
+        }
+
+        window.onload = function () {
+            setTimeout(() => {
+                timer = setInterval(() => {
+                    Next();
+                }, 300);
+            }, 12000);
+
+            // Aplica latido después del tiempo del rise
+            setTimeout(() => {
+                applyHeartbeat();
+                startBackgroundTransition(); // <--- inicia cambio de fondo suave
+            }, 12000 + 300 * 23 + 1500); // tiempo aproximado para terminar build y comenzar latido
+        };
+
+        function startBackgroundTransition() {
+            const images = document.querySelectorAll('.bg-img');
+            let current = 0;
+
+            setInterval(() => {
+                images[current].classList.remove('visible');
+                current = (current + 1) % images.length;
+                images[current].classList.add('visible');
+            }, 8000); // cambia cada 8 segundos
+        }
+    </script>
+</body>
+
+</html>
